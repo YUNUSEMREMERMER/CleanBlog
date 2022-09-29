@@ -1,6 +1,9 @@
 import express from 'express';
 import mongoose from 'mongoose';
 import Post from "./models/Post.js"
+import methodOverride from 'method-override';
+import { getAllPosts, getPost, createPost, updatePost, deletePost } from './controllers/postController.js';
+import { getAboutPage, gettAddPage, getEditPage } from './controllers/pageController.js';
 
 const app = express();
 
@@ -11,30 +14,24 @@ mongoose.connect('mongodb://localhost/cleanblog-test-db');
 app.use(express.static('public'));
 app.use(express.urlencoded({ extended: true }));
 app.use(express.json());
+app.use(
+  methodOverride('_method', {
+    methods: ['POST', 'GET'],
+  })
+);
 
 //template engine
 app.set('view engine', 'ejs');
 
-app.get('/', async (req, res) => {
-  
-  const posts = await Post.find({});
-  res.render('index', {
-    posts,
-  });
-});
+app.get('/', getAllPosts);
+app.get('/posts/:id', getPost);
+app.post('/add_post', createPost);
+app.put('/posts/:id', updatePost);
+app.delete('/posts/:id', deletePost);
 
-app.get('/about', (req, res) => {
-  res.render('about');
-});
-
-app.get('/add_post', (req, res) => {
-  res.render('add_post');
-});
-
-app.post('/add_post', async (req, res) => {
-  await Post.create(req.body)
-  res.redirect('/');
-});
+app.get('/about', getAboutPage);
+app.get('/add_post', gettAddPage);
+app.get('/posts/edit/:id', getEditPage);
 
 const port = 3000;
 
